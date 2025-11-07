@@ -1,10 +1,16 @@
-/* index.css — estilo inicial seguro */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
 body {
     margin: 0;
     padding: 0;
     font-family: Arial, Helvetica, sans-serif;
     background-color: #f6f7fb;
-    color: #333;
+    background-color: #F7F7F7; /* Mesmo bgLight */
+    color: #2B2B2B; /* Texto padrão */
   }
   
   h1, h2, h3 {
@@ -17,5 +23,6 @@ body {
   
   * {
     box-sizing: border-box;
+    transition: background-color 0.3s, color 0.3s;
   }
   
