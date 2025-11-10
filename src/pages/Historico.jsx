@@ -88,6 +88,7 @@ export default function Historico() {
                 <th className="py-3 text-gray-600 font-medium">Data</th>
                 <th className="py-3 text-gray-600 font-medium">Consumo (kW)</th>
                 <th className="py-3 text-gray-600 font-medium">Temperatura (°C)</th>
+                <th className="py-3 text-gray-600 font-medium">Umidade (%)</th>
               </tr>
             </thead>
             <tbody>
@@ -96,6 +97,7 @@ export default function Historico() {
                   <td className="py-3">{new Date(item.timestamp?.toDate()).toLocaleString()}</td>
                   <td className="py-3">{item.consumption}</td>
                   <td className="py-3">{item.temperature}</td>
+                  <td className="py-e">{item.humidity}</td>
                 </tr>
               ))}
 

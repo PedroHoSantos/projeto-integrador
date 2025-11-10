@@ -6,11 +6,12 @@ import Cadastro from "./Cadastro";
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-
   const [showCadastro, setShowCadastro] = useState(false);
-  if (showCadastro) return <Cadastro onVoltar={() => setShowCadastro(false)} />;
 
   const [error, setError] = useState("");
+
+  if (showCadastro) return <Cadastro onVoltar={() => setShowCadastro(false)} />;
+
 
   const handleLogin = async () => {
     setError("");
