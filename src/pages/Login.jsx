@@ -1,17 +1,30 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/firebase";
+import Cadastro from "./Cadastro";
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
+  const [showCadastro, setShowCadastro] = useState(false);
+  if (showCadastro) return <Cadastro onVoltar={() => setShowCadastro(false)} />;
+
+  const [error, setError] = useState("");
+
   const handleLogin = async () => {
+    setError("");
+
+    if (!email || !senha) {
+      setError("Preencha todos os campos.");
+      return;
+    }
+
     try {
-      await signInWithEmailAndPassword(auth, email, senha);
+      await signInWithEmailAndPassword(auth, email.trim(), senha);
       onLogin();
     } catch {
-      alert("E-mail ou senha incorretos.");
+      setError("E-mail ou senha incorretos.");
     }
   };
 
@@ -38,12 +51,27 @@ export default function Login({ onLogin }) {
           className="w-full p-3 bg-gray-100 rounded-lg mb-6 border border-gray-200 focus:outline-highlight"
         />
 
+        {error && (
+          <p className="text-red-500 text-sm mb-2 text-center">{error}</p>
+        )}
+
+
         <button
           onClick={handleLogin}
           className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-opacity-90 transition"
         >
           Entrar
         </button>
+
+        <p className="mt-4 text-sm text-center text-gray-600">
+          Não tem conta?{" "}
+          <span
+            className="text-highlight cursor-pointer hover:underline"
+            onClick={() => setShowCadastro(true)}
+          >
+            Cadastrar
+          </span>
+        </p>
 
         <p className="text-center text-sm text-gray-600 mt-4">
           Esqueceu a senha?{" "}

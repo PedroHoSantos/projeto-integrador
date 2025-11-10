@@ -5,6 +5,9 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Sobre from "./pages/Sobre";
 import Historico from "./pages/Historico";
+import KPIs from "./pages/KPIs";
+import Recomendacoes from "./pages/Recomendacoes";
+import Racks from "./pages/Racks";
 
 
 export default function App() {
@@ -25,9 +28,11 @@ export default function App() {
 
         <div className="flex gap-6">
           <button onClick={() => setPage("dashboard")} className="hover:text-highlight">Dashboard</button>
-          <button onClick={() => setPage("sobre")} className="hover:text-highlight">Sobre</button>
           <button onClick={() => setPage("historico")} className="hover:text-highlight">Histórico</button>
-
+          <button onClick={() => setPage("kpis")} className="hover:text-highlight">KPIs</button>
+          <button onClick={() => setPage("recomendacoes")} className="hover:text-highlight">Recomendações</button>
+          <button onClick={() => setPage("racks")} className="hover:text-highlight">Racks</button>
+          <button onClick={() => setPage("sobre")} className="hover:text-highlight">Sobre</button>
         </div>
 
         <button
@@ -38,11 +43,13 @@ export default function App() {
         </button>
       </nav>
 
-
-
       {page === "dashboard" && <Dashboard />}
-      {page === "sobre" && <Sobre />}
       {page === "historico" && <Historico />}
+      {page === "kpis" && <KPIs />}
+      {page === "recomendacoes" && <Recomendacoes />}
+      {page === "racks" && <Racks />}
+      {page === "sobre" && <Sobre />}
+
     </div>
   );
 }

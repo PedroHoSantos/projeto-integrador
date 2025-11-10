@@ -99,7 +99,7 @@ export default function Dashboard() {
         data: data.map((d) => d.temperature),
         borderColor: "red",
         backgroundColor: "rgba(255, 0, 0, 0.1)",
-        tension: 0.3,
+        tension: 0.4,
       },
     ],
   };
