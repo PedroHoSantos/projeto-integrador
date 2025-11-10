@@ -8,6 +8,7 @@ import Historico from "./pages/Historico";
 import KPIs from "./pages/KPIs";
 import Recomendacoes from "./pages/Recomendacoes";
 import Racks from "./pages/Racks";
+import ConsumoRacks from "./pages/ConsumoRacks";
 
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
           <button onClick={() => setPage("kpis")} className="hover:text-highlight">KPIs</button>
           <button onClick={() => setPage("recomendacoes")} className="hover:text-highlight">Recomendações</button>
           <button onClick={() => setPage("racks")} className="hover:text-highlight">Racks</button>
+          <button onClick={() => setPage("consumoRacks")} className="hover:text-highlight">Gráfico por Rack</button>
           <button onClick={() => setPage("sobre")} className="hover:text-highlight">Sobre</button>
         </div>
 
@@ -48,6 +50,7 @@ export default function App() {
       {page === "kpis" && <KPIs />}
       {page === "recomendacoes" && <Recomendacoes />}
       {page === "racks" && <Racks />}
+      {page === "consumoRacks" && <ConsumoRacks />}
       {page === "sobre" && <Sobre />}
 
     </div>

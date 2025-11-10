@@ -53,7 +53,8 @@ export default function Historico() {
     const worksheet = XLSX.utils.json_to_sheet(filtered.map(item => ({
       Data: new Date(item.timestamp?.toDate()).toLocaleString(),
       Consumo_kW: item.consumption,
-      Temperatura_C: item.temperature
+      Temperatura_C: item.temperature,
+      Umidade: item.humidity
     })));
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Histórico");

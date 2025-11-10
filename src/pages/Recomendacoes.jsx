@@ -16,8 +16,9 @@ export default function Recomendações() {
         const last = list[0];
         const recs = [];
 
-        if (last.temperature > 28) recs.push("Temperatura elevada detectada. Considere aumentar a ventilação do ambiente.");
-        if (last.consumption > 3.5) recs.push("Consumo alto identificado. Verifique distribuição de carga entre racks.");
+        if (last.temperature > 27) recs.push("Temperatura elevada detectada. Considere aumentar a ventilação do ambiente.");
+        if (last.consumption > 4.5) recs.push("Consumo alto identificado. Verifique distribuição de carga entre racks.");
+        if (last.humidity > 55) recs.push("Umidade elevada detectada. Considere aumentar a ventilação do ambiente.");
         if (recs.length === 0) recs.push("Sistema operando dentro dos parâmetros recomendados.");
 
         setRecommendations(recs);
@@ -27,7 +28,7 @@ export default function Recomendações() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bgLight p-8 text-textBase">
+    <div id="recomendacoes" className="p-4 bg-white rounded-lg shadow">
       <div className="bg-white p-8 rounded-xl border border-gray-200 max-w-4xl mx-auto">
         
         <h1 className="text-2xl font-semibold text-primary mb-6">Recomendações de Eficiência</h1>

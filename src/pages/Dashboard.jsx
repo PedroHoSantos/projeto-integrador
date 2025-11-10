@@ -12,6 +12,7 @@ import { Line } from "react-chartjs-2";
 import "chart.js/auto";
 import * as XLSX from "xlsx";
 import { deleteDoc, doc, getDocs } from "firebase/firestore";
+import Recomendacoes from "./Recomendacoes";
 
 export default function Dashboard() {
   const [data, setData] = useState([]);
@@ -19,7 +20,7 @@ export default function Dashboard() {
   // Gera dados simulados
   const simulateData = async () => {
     const consumption = (Math.random() * 4 + 1).toFixed(2);
-    const temperature = (25 + Math.random() * 5).toFixed(1);
+    const temperature = (22.5 + Math.random() * 5).toFixed(1);
     const humidity = (40 + Math.random() * 20).toFixed(1);
     await addDoc(collection(db, "simulations"), {
       consumption: Number(consumption),
@@ -28,6 +29,12 @@ export default function Dashboard() {
       timestamp: serverTimestamp(),
     });
   };
+
+  useEffect(() => {
+    const interval = setInterval(simulateData, (1000 * 60 * 1)); // 1 Hora
+    return () => clearInterval(interval);
+  }, []);
+
 
   //Apaga os dados caso necessário
   const clearData = async () => {
@@ -70,11 +77,11 @@ export default function Dashboard() {
       ? Math.max(...data.map((d) => d.consumption)).toFixed(2)
       : 0;
 
-  const hasAlert = data.some((d) => d.consumption > 4.5 );
+  const hasAlert = data.some((d) => averageConsumption > 4.5);
 
-  const hasAlertTemp = data.some((d) => d.temperature > 18 && d.temperature < 27);
+  const hasAlertTemp = data.some((d) => averageTemp > 27);
 
-  const hasAlertHumidity = data.some((d) => d.humidity >  55);
+  const hasAlertHumidity = data.some((d) => averageHumidity > 55);
 
   // Exportar para Excel
   const exportToExcel = () => {
@@ -85,6 +92,7 @@ export default function Dashboard() {
           : "—",
         Consumo_kW: d.consumption,
         Temperatura_C: d.temperature,
+        Umidade: d.humidity
       }))
     );
     const workbook = XLSX.utils.book_new();
@@ -94,7 +102,12 @@ export default function Dashboard() {
 
   // Dados do gráfico
   const chartData = {
-    labels: data.map((_, i) => `Leitura ${i + 1}`),
+    labels: data.map((_, i) => {
+      const d = data[i];
+      return d.timestamp
+      ? new Date(d.timestamp.toDate()).toLocaleString()
+      : "—"
+    }),
     datasets: [
       {
         label: "Consumo (kW)",
@@ -161,21 +174,23 @@ export default function Dashboard() {
       </div>
 
       {/* Alerta de consumo alto */}
-      {hasAlert && (
-        <div className="bg-red-100 text-red-700 p-3 mb-6 rounded shadow text-center font-semibold">
-          Alerta: Consumo acima do limite seguro detectado!
-        </div>
-      )}
-      {hasAlertTemp && (
-        <div className="bg-red-100 text-red-700 p-3 mb-6 rounded shadow text-center font-semibold">
-          Alerta: Temperatura acima do limite seguro detectado!
-        </div>
-      )}
-      {hasAlertHumidity && (
-        <div className="bg-red-100 text-red-700 p-3 mb-6 rounded shadow text-center font-semibold">
-        Alerta: Umidade acima do limite seguro detectado!
+      <div className="flex flex-col items-center">
+        {hasAlert && (
+          <div className="bg-red-100 text-red-700 p-3 mb-6 rounded shadow text-center font-semibold w-max">
+            Alerta: Consumo acima do limite seguro detectado!
+          </div>
+        )}
+        {hasAlertTemp && (
+          <div className="bg-red-100 text-red-700 p-3 mb-6 rounded shadow text-center font-semibold w-max">
+            Alerta: Temperatura acima do limite seguro detectado!
+          </div>
+        )}
+        {hasAlertHumidity && (
+          <div className="bg-red-100 text-red-700 p-3 mb-6 rounded shadow text-center font-semibold w-max">
+            Alerta: Umidade acima do limite seguro detectado!
+          </div>
+        )}
       </div>
-      )}
 
       {/* Botões */}
       <div className="flex flex-wrap gap-4 justify-center mt-8 mb-6">
@@ -202,7 +217,7 @@ export default function Dashboard() {
       </div>
 
       {/* Gráfico */}
-      <div className="bg-white p-4 rounded shadow mb-6">
+      <div className="bg-white p-6 rounded-lg shadow mb-6">
         {data.length > 0 ? (
           <Line data={chartData} options={chartOptions} />
         ) : (
@@ -235,7 +250,7 @@ export default function Dashboard() {
                 <td className={`p-2 ${d.consumption > 4.5 ? "text-red-600 font-bold" : ""}`}>
                   {d.consumption}
                 </td>
-                <td className={`p-2 ${d.temperature > 18 && d.temperature < 27 ? "text-red-600 font-bold" : ""}`}>
+                <td className={`p-2 ${d.temperature > 27 ? "text-red-600 font-bold" : ""}`}>
                   {d.temperature}</td>
                 <td className={`p-2 ${d.humidity > 55 ? "text-red-600 font-bold" : ""}`}>
                   {d.humidity}</td>
@@ -243,6 +258,9 @@ export default function Dashboard() {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="mt-6 ">
+        <Recomendacoes />
       </div>
 
     </div>
