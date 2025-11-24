@@ -31,7 +31,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const interval = setInterval(simulateData, (1000 * 60 * 1)); // 1 Hora
+    const interval = setInterval(simulateData, (1000 * 60 * 10)); // 1 Hora
     return () => clearInterval(interval);
   }, []);
 
