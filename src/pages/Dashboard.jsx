@@ -11,7 +11,6 @@ import {
 import { Line } from "react-chartjs-2";
 import "chart.js/auto";
 import * as XLSX from "xlsx";
-import { deleteDoc, doc, getDocs } from "firebase/firestore";
 import Recomendacoes from "./Recomendacoes";
 
 export default function Dashboard() {
@@ -20,11 +19,32 @@ export default function Dashboard() {
   const [itemsPerPage] = useState(10);
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split("T")[0]);
 
-  // Gera dados simulados
+  // Gera dados simulados de forma mais realista
   const simulateData = async () => {
-    const consumption = (Math.random() * 4 + 1).toFixed(2);
-    const temperature = (22.5 + Math.random() * 5).toFixed(1);
-    const humidity = (40 + Math.random() * 20).toFixed(1);
+    const now = new Date();
+    const hour = now.getHours();
+
+    // Simula um padrão de consumo mais alto durante o horário comercial (8h-18h)
+    const isBusinessHours = hour >= 8 && hour < 18;
+    let baseConsumption = isBusinessHours ? 3.5 : 1.5;
+    
+    // Adiciona uma variação aleatória
+    baseConsumption += Math.random() * 0.5 - 0.25; // Variação de -0.25 a +0.25
+
+    // Chance de 5% de ocorrer um pico de consumo
+    if (Math.random() < 0.05) {
+      baseConsumption *= 1.5; // Aumenta o consumo em 50%
+    }
+
+    // Simula a temperatura com um padrão diário
+    const baseTemperature = isBusinessHours ? 25 : 22;
+    const temperature = (baseTemperature + Math.random() * 2 - 1).toFixed(1);
+
+    // Mantém a umidade com variação simples
+    const humidity = (45 + Math.random() * 15).toFixed(1);
+
+    const consumption = Math.max(0.5, baseConsumption).toFixed(2); // Garante um consumo mínimo
+
     await addDoc(collection(db, "simulations"), {
       consumption: Number(consumption),
       temperature: Number(temperature),
@@ -34,17 +54,9 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const interval = setInterval(simulateData, 1000 * 60 * 1); // 1 minute
+    const interval = setInterval(simulateData, 1000 * 60 * 1); // 1 minuto
     return () => clearInterval(interval);
   }, []);
-
-  //Apaga os dados caso necessário
-  const clearData = async () => {
-    const querySnapshot = await getDocs(collection(db, "simulations"));
-    querySnapshot.forEach(async (docItem) => {
-      await deleteDoc(doc(db, "simulations", docItem.id));
-    });
-  };
 
   // Escuta Firestore em tempo real
   useEffect(() => {
@@ -59,7 +71,7 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, []);
 
-  // Pagination Logic
+  // Lógica de paginação
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
@@ -67,7 +79,7 @@ export default function Dashboard() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Filtered data for chart
+  // Filtro de dados para o gráfico
   const filteredData = data.filter(d => {
     if (!filterDate || !d.timestamp) return true;
     const itemDate = new Date(d.timestamp.toDate()).toISOString().split("T")[0];
@@ -207,24 +219,10 @@ export default function Dashboard() {
       {/* Botões */}
       <div className="flex flex-wrap gap-4 justify-center mt-8 mb-6">
         <button
-          onClick={simulateData}
-          className="bg-primary text-white px-6 py-3 rounded-lg shadow-sm hover:opacity-90 transition"
-        >
-          Gerar Simulação
-        </button>
-
-        <button
           onClick={exportToExcel}
           className="bg-highlight text-white px-6 py-3 rounded-lg shadow-sm hover:opacity-90 transition"
         >
           Exportar Dados
-        </button>
-
-        <button
-          onClick={clearData}
-          className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-sm hover:opacity-90 transition"
-        >
-          Apagar Dados
         </button>
       </div>
 
