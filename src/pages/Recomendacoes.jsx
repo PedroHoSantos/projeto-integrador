@@ -3,14 +3,12 @@ import { db } from "../services/firebase";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 
 export default function Recomendações() {
-  const [data, setData] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
 
   useEffect(() => {
     const q = query(collection(db, "simulations"), orderBy("timestamp", "desc"));
     const unsub = onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map((doc) => ({ ...doc.data() }));
-      setData(list);
 
       if (list.length > 0) {
         const last = list[0];

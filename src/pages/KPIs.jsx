@@ -3,7 +3,6 @@ import { db } from "../services/firebase";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 
 export default function KPIs() {
-  const [data, setData] = useState([]);
   const [pue, setPue] = useState(0);
   const [cue, setCue] = useState(0);
 
@@ -11,7 +10,6 @@ export default function KPIs() {
     const q = query(collection(db, "simulations"), orderBy("timestamp", "desc"));
     const unsub = onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map((doc) => ({ ...doc.data() }));
-      setData(list);
 
       if (list.length > 0) {
         const avgConsumption = list.reduce((sum, v) => sum + v.consumption, 0) / list.length;

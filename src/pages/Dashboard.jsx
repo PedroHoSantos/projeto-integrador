@@ -16,6 +16,9 @@ import Recomendacoes from "./Recomendacoes";
 
 export default function Dashboard() {
   const [data, setData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [filterDate, setFilterDate] = useState(new Date().toISOString().split("T")[0]);
 
   // Gera dados simulados
   const simulateData = async () => {
@@ -31,10 +34,9 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const interval = setInterval(simulateData, (1000 * 60 * 10)); // 1 Hora
+    const interval = setInterval(simulateData, 1000 * 60 * 1); // 1 minute
     return () => clearInterval(interval);
   }, []);
-
 
   //Apaga os dados caso necessário
   const clearData = async () => {
@@ -43,7 +45,6 @@ export default function Dashboard() {
       await deleteDoc(doc(db, "simulations", docItem.id));
     });
   };
-
 
   // Escuta Firestore em tempo real
   useEffect(() => {
@@ -57,6 +58,21 @@ export default function Dashboard() {
     });
     return () => unsubscribe();
   }, []);
+
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Filtered data for chart
+  const filteredData = data.filter(d => {
+    if (!filterDate || !d.timestamp) return true;
+    const itemDate = new Date(d.timestamp.toDate()).toISOString().split("T")[0];
+    return itemDate === filterDate;
+  });
 
   // Estatísticas básicas
   const averageConsumption =
@@ -77,11 +93,11 @@ export default function Dashboard() {
       ? Math.max(...data.map((d) => d.consumption)).toFixed(2)
       : 0;
 
-  const hasAlert = data.some((d) => averageConsumption > 4.5);
+  const hasAlert = data.some(() => averageConsumption > 4.5);
 
-  const hasAlertTemp = data.some((d) => averageTemp > 27);
+  const hasAlertTemp = data.some(() => averageTemp > 27);
 
-  const hasAlertHumidity = data.some((d) => averageHumidity > 55);
+  const hasAlertHumidity = data.some(() => averageHumidity > 55);
 
   // Exportar para Excel
   const exportToExcel = () => {
@@ -102,30 +118,27 @@ export default function Dashboard() {
 
   // Dados do gráfico
   const chartData = {
-    labels: data.map((_, i) => {
-      const d = data[i];
-      return d.timestamp
-      ? new Date(d.timestamp.toDate()).toLocaleString()
-      : "—"
-    }),
+    labels: filteredData.map((d) =>
+      d.timestamp ? new Date(d.timestamp.toDate()).toLocaleTimeString() : "—"
+    ),
     datasets: [
       {
         label: "Consumo (kW)",
-        data: data.map((d) => d.consumption),
+        data: filteredData.map((d) => d.consumption),
         borderColor: "yellow",
         backgroundColor: "rgba(0, 0, 255, 0.1)",
         tension: 0.4,
       },
       {
         label: "Umidade (%)",
-        data: data.map((d) => d.humidity),
+        data: filteredData.map((d) => d.humidity),
         borderColor: "blue",
         backgroundColor: "rgba(0, 0, 255, 0.1)",
         tension: 0.4,
       },
       {
         label: "Temperatura (°C)",
-        data: data.map((d) => d.temperature),
+        data: filteredData.map((d) => d.temperature),
         borderColor: "red",
         backgroundColor: "rgba(255, 0, 0, 0.1)",
         tension: 0.4,
@@ -142,7 +155,6 @@ export default function Dashboard() {
       y: { grid: { color: "#E5E7EB" } }
     }
   };
-
 
   return (
     <div className="min-h-screen bg-bgLight p-8 text-textBase">
@@ -218,11 +230,14 @@ export default function Dashboard() {
 
       {/* Gráfico */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        {data.length > 0 ? (
+        <div className="flex justify-center mb-4">
+          <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)} className="border p-2 rounded"/>
+        </div>
+        {filteredData.length > 0 ? (
           <Line data={chartData} options={chartOptions} />
         ) : (
           <p className="text-gray-500 text-center">
-            Nenhum dado ainda. Clique em “Gerar Simulação”.
+            Nenhum dado para a data selecionada.
           </p>
         )}
       </div>
@@ -240,29 +255,32 @@ export default function Dashboard() {
             </tr>
           </thead>
           <tbody>
-            {data.map((d, i) => (
+            {currentItems.map((d, i) => (
               <tr key={i} className="border-b hover:bg-gray-50">
                 <td className="p-2">
                   {d.timestamp
                     ? new Date(d.timestamp.toDate()).toLocaleString()
                     : "—"}
                 </td>
-                <td className={`p-2 ${d.consumption > 4.5 ? "text-red-600 font-bold" : ""}`}>
-                  {d.consumption}
-                </td>
-                <td className={`p-2 ${d.temperature > 27 ? "text-red-600 font-bold" : ""}`}>
-                  {d.temperature}</td>
-                <td className={`p-2 ${d.humidity > 55 ? "text-red-600 font-bold" : ""}`}>
-                  {d.humidity}</td>
+                <td className={`p-2 ${d.consumption > 4.5 ? "text-red-600 font-bold" : ""}`}>{d.consumption}</td>
+                <td className={`p-2 ${d.temperature > 27 ? "text-red-600 font-bold" : ""}`}>{d.temperature}</td>
+                <td className={`p-2 ${d.humidity > 55 ? "text-red-600 font-bold" : ""}`}>{d.humidity}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        {/* Pagination Controls */}
+        <div className="flex justify-center mt-4">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
+            <button key={number} onClick={() => paginate(number)} className={`px-4 py-2 mx-1 rounded ${currentPage === number ? 'bg-primary text-white' : 'bg-gray-200'}`}>
+              {number}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="mt-6 ">
         <Recomendacoes />
       </div>
-
     </div>
   );
 }
